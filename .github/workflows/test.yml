@@ -1,0 +1,47 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Verify all 22 checkers register
+        run: |
+          python -c "
+          from app.checkers.registry import registry
+          import app.checkers.site_foundation
+          import app.checkers.indexability_speed
+          import app.checkers.graph_discovery
+          import app.checkers.node_readability
+          import app.checkers.authority_trust
+          import app.checkers.llm_extraction
+          import app.checkers.content_quality
+          count = len(registry.all())
+          assert count == 22, f'Expected 22 checkers, got {count}'
+          print(f'All {count} checkers registered successfully')
+          "
+
+      - name: Run tests
+        run: pytest -v
+
+      - name: Lint with ruff
+        run: ruff check app/ tests/
