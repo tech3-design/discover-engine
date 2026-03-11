@@ -107,8 +107,11 @@ curl -X POST http://localhost:8000/api/v1/discover \
 # 2. Check status
 curl http://localhost:8000/api/v1/discover/abc123/status
 
-# 3. Get the full discovery report
-curl http://localhost:8000/api/v1/discover/abc123/report
+# 3. Get the full discovery report (PDF)
+curl -o report.pdf http://localhost:8000/api/v1/discover/abc123/report
+
+# Optional: request JSON instead of PDF
+curl http://localhost:8000/api/v1/discover/abc123/report?format=json
 ```
 
 ## API Endpoints
@@ -119,7 +122,7 @@ curl http://localhost:8000/api/v1/discover/abc123/report
 | `POST` | `/api/v1/discover` | Start a new site discovery (returns `202`) |
 | `GET` | `/api/v1/discover/{id}/status` | Check discovery status |
 | `GET` | `/api/v1/discover/{id}/results` | Get raw analysis results |
-| `GET` | `/api/v1/discover/{id}/report` | Get the formal Site Discovery Report |
+| `GET` | `/api/v1/discover/{id}/report` | Get the formal Site Discovery Report (PDF by default, `format=json` for JSON) |
 
 Interactive API documentation is available at `/docs` (Swagger UI) when the server is running.
 

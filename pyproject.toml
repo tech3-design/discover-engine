@@ -26,10 +26,12 @@ dependencies = [
     "httpx",
     "beautifulsoup4",
     "lxml",
+    "jinja2",
     "pydantic>=2.0",
     "pydantic-settings",
     "structlog",
     "textstat",
+    "xhtml2pdf",
 ]
 
 [project.optional-dependencies]
