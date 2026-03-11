@@ -6,7 +6,7 @@
   <style>
     @page {
       size: A4;
-      margin: 40pt 44pt 64pt 44pt;
+      margin: 40pt 44pt 56pt 44pt;
     }
 
     body {
@@ -18,85 +18,141 @@
       padding: 0;
     }
 
-    /* ── Repeating Page Footer ── */
+    /* ─────────────────────────────────────────────
+       REPEATING PAGE FOOTER
+       Moved to end of <body> so its in-flow render
+       does not appear before the cover.
+       position:fixed keeps it on every page.
+    ───────────────────────────────────────────── */
     .page-footer {
       position: fixed;
-      bottom: -52pt;
-      left: -44pt;
-      right: -44pt;
-      height: 44pt;
-      border-top: 1pt solid #C5CDFF;
+      bottom: -44pt;     /* 56pt bottom margin - 44pt footer height = 12pt from page edge */
+      left:   -44pt;     /* bleed into left margin */
+      right:  -44pt;     /* bleed into right margin */
+      height: 36pt;
       background-color: #ffffff;
-      padding: 10pt 44pt 0 44pt;
+      border-top: 1.5pt solid #C5CDFF;
+      padding: 8pt 44pt 0 44pt;
     }
-    .footer-table {
-      width: 100%;
-      border: none;
-      margin: 0;
-    }
+    .footer-table { width: 100%; border: none; margin: 0; }
     .footer-table td {
-      border: none;
+      border: none; padding: 0;
+      font-size: 8.5pt; color: #5A6A7A; vertical-align: middle;
+    }
+    .footer-brand { font-weight: 600; color: #3A4ACF; }
+
+    /* ─────────────────────────────────────────────
+       COVER — table layout so xhtml2pdf renders ONE
+       solid background block, not fragmented boxes.
+       Child elements use padding-bottom, never margin,
+       to avoid white margin gaps.
+    ───────────────────────────────────────────── */
+
+    /* Accent strip: negative margins bleed to page edges */
+    .cover-accent-strip {
+      background-color: #5B6BF8;
+      height: 5pt;
+      margin: -40pt -44pt 0 -44pt;
       padding: 0;
-      font-size: 8.5pt;
-      color: #5A6A7A;
-      vertical-align: middle;
+      font-size: 0;
+      line-height: 0;
     }
 
-    /* ── Cover ── */
-    .cover {
-      background-color: #1E2A4A;
-      padding: 52pt 40pt 44pt 40pt;
+    /* Main cover block — table approach for reliable bg rendering */
+    .cover-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 -44pt;
     }
+    .cover-main-cell {
+      background-color: #1E2A4A;
+      padding: 48pt 52pt 0 52pt;
+      vertical-align: top;
+    }
+    .cover-bottom-cell {
+      background-color: #172140;
+      padding: 22pt 52pt 48pt 52pt;
+      vertical-align: top;
+    }
+
+    /* Cover typography — padding-bottom for spacing, never margin */
     .cover-eyebrow {
-      font-size: 7.5pt;
+      font-size: 7pt;
       font-weight: 700;
-      letter-spacing: 1.5pt;
+      letter-spacing: 2.2pt;
       text-transform: uppercase;
       color: #8BA3FF;
-      margin: 0 0 20pt 0;
+      padding: 0 0 26pt 0;
+      margin: 0;
     }
     .cover-title {
-      font-size: 30pt;
+      font-size: 34pt;
       font-weight: 700;
       color: #ffffff;
-      line-height: 1.15;
-      margin: 0 0 10pt 0;
+      line-height: 1.12;
+      padding: 0 0 8pt 0;
+      margin: 0;
     }
-    .cover-divider {
-      border: none;
-      border-top: 1pt solid rgba(255,255,255,0.12);
-      margin: 22pt 0;
+    .cover-subtitle {
+      font-size: 11pt;
+      color: #6B7EA3;
+      font-weight: 400;
+      padding: 0 0 32pt 0;
+      margin: 0;
     }
-    .cover-for-label {
-      font-size: 8.5pt;
-      color: rgba(255,255,255,0.4);
+    /* Divider using a table row with border instead of <hr> */
+    .cover-rule-cell {
+      background-color: #1E2A4A;
+      border-bottom: 1pt solid #2A3B5E;
+      padding: 0;
+      height: 0;
+      font-size: 0;
+      line-height: 0;
+    }
+    .cover-spacer-cell {
+      background-color: #1E2A4A;
+      height: 28pt;
+      padding: 0;
+      font-size: 0;
+      line-height: 0;
+    }
+    .cover-for-cell {
+      background-color: #1E2A4A;
+      padding: 0 52pt 0 52pt;
+      vertical-align: top;
+    }
+    .cover-label {
+      font-size: 7pt;
+      color: #5A6F8C;
       text-transform: uppercase;
-      letter-spacing: 0.8pt;
+      letter-spacing: 1.5pt;
       font-weight: 700;
-      margin: 0 0 4pt 0;
+      padding: 0 0 5pt 0;
+      margin: 0;
     }
     .cover-url {
-      font-size: 11pt;
-      color: rgba(255,255,255,0.8);
+      font-size: 12.5pt;
+      color: #C8D5E8;
       font-weight: 600;
-      margin: 0 0 14pt 0;
       word-break: break-all;
+      padding: 0 0 28pt 0;
+      margin: 0;
     }
     .cover-meta {
-      font-size: 9pt;
-      color: rgba(255,255,255,0.4);
-      margin: 2pt 0;
+      font-size: 8.5pt;
+      color: #4A5E7A;
+      padding: 0 0 4pt 0;
+      margin: 0;
     }
     .cover-badge {
       display: inline-block;
-      border: 1pt solid rgba(255,255,255,0.22);
-      color: rgba(255,255,255,0.5);
+      border: 1pt solid #2E4060;
+      color: #4A6080;
       font-size: 7pt;
       font-weight: 700;
-      letter-spacing: 1.2pt;
+      letter-spacing: 1.8pt;
       text-transform: uppercase;
-      padding: 3pt 9pt;
-      margin-top: 20pt;
+      padding: 3pt 12pt;
     }
 
     /* ── Headings ── */
@@ -122,9 +178,7 @@
       margin: 18pt 0 7pt 0;
       padding: 0;
     }
-    p {
-      margin: 0 0 8pt 0;
-    }
+    p { margin: 0 0 8pt 0; }
 
     /* ── Executive Summary ── */
     .exec-summary {
@@ -139,9 +193,6 @@
     }
 
     /* ── Stats Snapshot ── */
-    .stats-table {
-      margin: 8pt 0 20pt 0;
-    }
     .stat-value {
       font-size: 26pt;
       font-weight: 700;
@@ -163,7 +214,7 @@
       width: 33%;
     }
 
-    /* ── Tables (shared) ── */
+    /* ── Tables ── */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -186,9 +237,7 @@
       vertical-align: top;
       color: #0D1117;
     }
-    .row-even td {
-      background-color: #F7F9FC;
-    }
+    .row-even td { background-color: #F7F9FC; }
 
     /* ── Methodology ── */
     .methodology-block {
@@ -265,12 +314,8 @@
       color: #5A6A7A;
       font-weight: 600;
     }
-    .evidence-table td:last-child {
-      width: 72%;
-    }
-    .evidence-row-even td {
-      background-color: #F0F4FF;
-    }
+    .evidence-table td:last-child { width: 72%; }
+    .evidence-row-even td { background-color: #F0F4FF; }
     .evidence-truncated {
       font-size: 8.5pt;
       color: #5A6A7A;
@@ -293,39 +338,54 @@
 </head>
 <body>
 
-  <!-- ── Repeating Page Footer ── -->
-  <div class="page-footer">
-    <table class="footer-table">
-      <tr>
-        <td>{{ document_type }} &mdash; Optiminastic Advisory</td>
-        <td style="text-align: right;">Page <pdf:pagenumber> of <pdf:pagecount></td>
-      </tr>
-    </table>
-  </div>
+  <!-- ══════════════════════════════════════════
+       COVER PAGE
+       Uses table layout so xhtml2pdf renders a
+       single solid background — no fragmented boxes.
+  ═══════════════════════════════════════════ -->
 
-  <!-- ── Cover Page ── -->
-  <div class="cover">
-    <div class="cover-eyebrow">Optiminastic Advisory</div>
-    <div class="cover-title">{{ document_type }}</div>
-    <hr class="cover-divider">
-    <div class="cover-for-label">Prepared for</div>
-    <div class="cover-url">{{ url }}</div>
-    <div class="cover-meta">Generated {{ generated_at_display }}</div>
-    <div class="cover-meta">Optiminastic Advisory</div>
-    <div class="cover-badge">Confidential</div>
-  </div>
+  <!-- Brand-color accent strip bleeding to page edges -->
+  <div class="cover-accent-strip">&nbsp;</div>
+
+  <!-- Main dark cover block -->
+  <table class="cover-table">
+    <!-- ── Top content ── -->
+    <tr>
+      <td class="cover-main-cell">
+        <div class="cover-eyebrow">Optiminastic Advisory</div>
+        <div class="cover-title">{{ document_type }}</div>
+        <div class="cover-subtitle">AI-Powered Site Intelligence &amp; Discovery</div>
+      </td>
+    </tr>
+    <!-- ── Hairline divider ── -->
+    <tr><td class="cover-rule-cell"></td></tr>
+    <tr><td class="cover-spacer-cell"></td></tr>
+    <!-- ── "Prepared for" section ── -->
+    <tr>
+      <td class="cover-for-cell">
+        <div class="cover-label">Prepared for</div>
+        <div class="cover-url">{{ url }}</div>
+      </td>
+    </tr>
+    <!-- ── Bottom meta band ── -->
+    <tr>
+      <td class="cover-bottom-cell">
+        <div class="cover-meta">Generated {{ generated_at_display }}</div>
+        <div class="cover-meta" style="padding-bottom: 16pt;">Optiminastic Advisory &mdash; Confidential Research</div>
+        <div class="cover-badge">Confidential</div>
+      </td>
+    </tr>
+  </table>
 
   <div class="page-break"></div>
 
   <!-- ── Executive Summary ── -->
   <h1>Executive Summary</h1>
-  <div class="exec-summary">
-    {{ executive_summary }}
-  </div>
+  <div class="exec-summary">{{ executive_summary }}</div>
 
   <!-- ── Engagement Snapshot ── -->
   <h2>Engagement Snapshot</h2>
-  <table class="stats-table">
+  <table>
     <tbody>
       <tr>
         <td class="stat-cell">
@@ -367,9 +427,7 @@
   <!-- ── Methodology ── -->
   <div class="page-break"></div>
   <h2>Methodology</h2>
-  <div class="methodology-block">
-    {{ methodology }}
-  </div>
+  <div class="methodology-block">{{ methodology }}</div>
 
   <!-- ── Sections ── -->
   {% for section in sections %}
@@ -419,6 +477,21 @@
   {% endfor %}
 
   {% endfor %}
+
+  <!-- ══════════════════════════════════════════
+       PAGE FOOTER — placed at end of body so its
+       in-flow render (xhtml2pdf quirk) falls at the
+       end of the last page, not the top of page 1.
+       position:fixed makes it repeat on every page.
+  ═══════════════════════════════════════════ -->
+  <div class="page-footer">
+    <table class="footer-table">
+      <tr>
+        <td><span class="footer-brand">Optiminastic</span> &mdash; {{ document_type }}</td>
+        <td style="text-align: right; color: #9AA5B4;">Page <pdf:pagenumber> of <pdf:pagecount></td>
+      </tr>
+    </table>
+  </div>
 
 </body>
 </html>
