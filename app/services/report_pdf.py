@@ -2,33 +2,24 @@ from __future__ import annotations
 
 import io
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
-from xhtml2pdf import pisa
+from fpdf import FPDF
 
 
 def render_report_pdf(report: dict) -> bytes:
     """Render a Site Discovery Report as PDF bytes."""
     context = _build_report_context(report)
-    html = _render_template("report.html", context)
-    pdf_buffer = io.BytesIO()
-    pisa_status = pisa.CreatePDF(html, dest=pdf_buffer, encoding="utf-8")
-    if pisa_status.err:
-        raise RuntimeError("PDF generation failed")
-    pdf_buffer.seek(0)
-    return pdf_buffer.read()
-
-
-def _render_template(template_name: str, context: dict) -> str:
-    templates_dir = Path(__file__).resolve().parents[1] / "templates"
-    env = Environment(
-        loader=FileSystemLoader(str(templates_dir)),
-        autoescape=select_autoescape(["html", "xml"]),
-    )
-    template = env.get_template(template_name)
-    return template.render(**context)
+    pdf = _ReportPDF()
+    pdf.set_auto_page_break(auto=True, margin=36)
+    pdf.add_page()
+    _render_cover(pdf, context)
+    pdf.add_page()
+    _render_executive_summary(pdf, context)
+    _render_methodology(pdf, context)
+    _render_sections(pdf, context)
+    output = pdf.output(dest="S").encode("latin-1")
+    return output
 
 
 def _build_report_context(report: dict) -> dict:
@@ -156,3 +147,173 @@ def _soft_wrap_tokens(text: str, max_len: int) -> str:
         chunks = [token[i : i + max_len] for i in range(0, len(token), max_len)]
         parts.append(" ".join(chunks))
     return " ".join(parts)
+
+
+class _ReportPDF(FPDF):
+    def __init__(self) -> None:
+        super().__init__(orientation="P", unit="pt", format="A4")
+        self.set_margins(left=42, top=36, right=42)
+
+    def footer(self) -> None:
+        self.set_y(-28)
+        self.set_font("Helvetica", "", 9)
+        self.set_text_color(120, 130, 140)
+        self.cell(0, 12, f"Page {self.page_no()}", align="R")
+
+
+def _render_cover(pdf: FPDF, context: dict) -> None:
+    pdf.set_font("Helvetica", "B", 22)
+    pdf.set_text_color(20, 28, 40)
+    pdf.cell(0, 28, context["document_type"], ln=1)
+
+    pdf.set_font("Helvetica", "", 12)
+    pdf.set_text_color(60, 70, 85)
+    pdf.cell(0, 18, f"Prepared for {context['url']}", ln=1)
+    pdf.cell(0, 18, f"Generated {context['generated_at_display']}", ln=1)
+    pdf.ln(10)
+
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(90, 100, 110)
+    pdf.cell(0, 14, "Prepared by Optiminastic Advisory", ln=1)
+    pdf.ln(16)
+
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_text_color(90, 100, 110)
+    pdf.cell(0, 14, "CONFIDENTIAL", ln=1)
+
+
+def _render_executive_summary(pdf: FPDF, context: dict) -> None:
+    _section_title(pdf, "Executive Summary")
+    pdf.set_font("Helvetica", "", 11)
+    pdf.set_text_color(30, 36, 46)
+    pdf.multi_cell(0, 16, context.get("executive_summary", "") or "Summary unavailable.")
+    pdf.ln(6)
+
+    _section_title(pdf, "Engagement Snapshot")
+    stats = context["stats"]
+    _table(
+        pdf,
+        headers=["Sections", "Analyses", "Observations"],
+        rows=[[str(stats["section_count"]), str(stats["analysis_count"]), str(stats["observation_count"])]],
+        col_widths=[120, 120, 140],
+    )
+
+    pdf.ln(6)
+    _section_title(pdf, "Section Coverage")
+    rows = [
+        [s["title"], str(s["analysis_count"]), str(s["observation_count"])]
+        for s in context["section_summaries"]
+    ]
+    _table(pdf, headers=["Section", "Analyses", "Observations"], rows=rows, col_widths=[240, 100, 100])
+    pdf.ln(10)
+
+
+def _render_methodology(pdf: FPDF, context: dict) -> None:
+    _section_title(pdf, "Methodology")
+    pdf.set_font("Helvetica", "", 11)
+    pdf.set_text_color(30, 36, 46)
+    pdf.multi_cell(0, 16, context.get("methodology", ""))
+    pdf.add_page()
+
+
+def _render_sections(pdf: FPDF, context: dict) -> None:
+    for section in context["sections"]:
+        _section_title(pdf, section["title"])
+        pdf.set_font("Helvetica", "", 10)
+        pdf.set_text_color(90, 100, 110)
+        if section["description"]:
+            pdf.multi_cell(0, 14, section["description"])
+            pdf.ln(4)
+
+        for analysis in section["analyses"]:
+            _analysis_block(pdf, analysis)
+
+        pdf.add_page()
+
+
+def _analysis_block(pdf: FPDF, analysis: dict) -> None:
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.set_text_color(25, 35, 45)
+    pdf.multi_cell(0, 16, analysis.get("subject", ""))
+
+    methodology = analysis.get("methodology")
+    if methodology:
+        pdf.set_font("Helvetica", "", 10)
+        pdf.set_text_color(90, 100, 110)
+        pdf.multi_cell(0, 14, methodology)
+
+    observations = analysis.get("observations") or []
+    if observations:
+        pdf.set_font("Helvetica", "", 10)
+        pdf.set_text_color(30, 36, 46)
+        for obs in observations:
+            pdf.multi_cell(0, 14, f"- {obs}")
+    else:
+        pdf.set_font("Helvetica", "", 10)
+        pdf.set_text_color(90, 100, 110)
+        pdf.multi_cell(0, 14, "No observations recorded.")
+
+    evidence_items = analysis.get("evidence_items") or []
+    if evidence_items:
+        pdf.ln(4)
+        rows = [[item["key"], item["value"]] for item in evidence_items]
+        _table(pdf, headers=["Evidence", "Detail"], rows=rows, col_widths=[160, 260])
+        if analysis.get("evidence_truncated"):
+            pdf.set_font("Helvetica", "", 9)
+            pdf.set_text_color(110, 120, 130)
+            pdf.multi_cell(0, 12, "Evidence truncated for brevity.")
+    pdf.ln(8)
+
+
+def _section_title(pdf: FPDF, text: str) -> None:
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.set_text_color(15, 35, 55)
+    pdf.cell(0, 18, text, ln=1)
+
+
+def _table(
+    pdf: FPDF,
+    headers: list[str],
+    rows: list[list[str]],
+    col_widths: list[int],
+    row_height: int = 16,
+) -> None:
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(40, 55, 70)
+    for header, width in zip(headers, col_widths, strict=False):
+        pdf.cell(width, row_height, header, border=1)
+    pdf.ln(row_height)
+
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(30, 36, 46)
+    for row in rows:
+        heights = []
+        for value, width in zip(row, col_widths, strict=False):
+            heights.append(_calc_cell_height(pdf, value, width, row_height))
+        max_height = max(heights) if heights else row_height
+        start_x = pdf.get_x()
+        start_y = pdf.get_y()
+
+        for value, width in zip(row, col_widths, strict=False):
+            x = pdf.get_x()
+            y = pdf.get_y()
+            pdf.multi_cell(width, row_height, value, border=1)
+            pdf.set_xy(x + width, y)
+        pdf.set_xy(start_x, start_y + max_height)
+
+
+def _calc_cell_height(pdf: FPDF, text: str, width: int, row_height: int) -> int:
+    if not text:
+        return row_height
+    words = text.split(" ")
+    lines = 1
+    line_width = 0
+    space_width = pdf.get_string_width(" ")
+    for word in words:
+        word_width = pdf.get_string_width(word)
+        if line_width + word_width <= width:
+            line_width += word_width + space_width
+        else:
+            lines += 1
+            line_width = word_width + space_width
+    return row_height * lines
