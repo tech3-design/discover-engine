@@ -1,218 +1,424 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>{{ document_type }} - {{ url }}</title>
-    <style>
-      @page {
-        size: A4;
-        margin: 36pt 42pt;
-      }
-      body {
-        font-family: Helvetica, Arial, sans-serif;
-        color: #1a1f2a;
-        font-size: 11pt;
-        line-height: 1.55;
-      }
-      h1, h2, h3 {
-        margin: 0 0 8pt 0;
-        font-weight: 700;
-      }
-      h1 { font-size: 20pt; }
-      h2 { font-size: 14pt; color: #0f2d45; border-bottom: 1pt solid #cfd7df; padding-bottom: 4pt; }
-      h3 { font-size: 12pt; color: #2f4156; }
-      p { margin: 0 0 8pt 0; }
-      .muted { color: #5a6a7a; }
-      .page-break { page-break-after: always; }
-      .cover {
-        border: 1pt solid #cfd7df;
-        padding: 26pt;
-      }
-      .cover-title {
-        font-size: 24pt;
-        color: #0b1b2b;
-        margin-bottom: 6pt;
-      }
-      .cover-subtitle {
-        font-size: 13pt;
-        color: #2f4156;
-        margin-bottom: 16pt;
-      }
-      .cover-meta {
-        font-size: 10pt;
-        color: #5a6a7a;
-      }
-      .badge {
-        display: inline-block;
-        padding: 3pt 7pt;
-        border: 1pt solid #cfd7df;
-        color: #5a6a7a;
-        font-size: 9pt;
-        text-transform: uppercase;
-        letter-spacing: 1pt;
-        margin-top: 14pt;
-      }
-      .summary-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 8pt 0 12pt 0;
-      }
-      .summary-table th,
-      .summary-table td {
-        text-align: left;
-        border-bottom: 1pt solid #e6ebf0;
-        padding: 6pt 8pt;
-        font-size: 10pt;
-      }
-      .summary-table th {
-        color: #2f4156;
-        background: #f7f9fb;
-      }
-      .section-block {
-        margin-top: 16pt;
-      }
-      .analysis {
-        border: 1pt solid #e1e7ee;
-        padding: 10pt 12pt;
-        margin: 10pt 0 12pt 0;
-        background: #fbfcfd;
-      }
-      .analysis-title {
-        font-size: 12pt;
-        font-weight: 700;
-        margin-bottom: 6pt;
-      }
-      .observation-list {
-        margin: 6pt 0 8pt 14pt;
-      }
-      .evidence-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 8pt;
-        table-layout: fixed;
-      }
-      .evidence-table th,
-      .evidence-table td {
-        border-bottom: 1pt solid #edf1f5;
-        padding: 5pt 6pt;
-        font-size: 9pt;
-        vertical-align: top;
-        word-wrap: break-word;
-        overflow-wrap: anywhere;
-      }
-      .evidence-table th {
-        background: #f7f9fb;
-        color: #5a6a7a;
-        width: 28%;
-      }
-      .evidence-table td {
-        width: 72%;
-      }
-      .footer {
-        margin-top: 20pt;
-        border-top: 1pt solid #e0e6ec;
-        padding-top: 8pt;
-        font-size: 9pt;
-        color: #5a6a7a;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="cover">
-      <div class="cover-title">{{ document_type }}</div>
-      <div class="cover-subtitle">Prepared for {{ url }}</div>
-      <div class="cover-meta">Generated {{ generated_at_display }}</div>
-      <div class="cover-meta">Prepared by Optiminastic Advisory</div>
-      <div class="badge">Confidential</div>
-    </div>
+<html xmlns:pdf="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <title>{{ document_type }} &mdash; {{ url }}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 40pt 44pt 64pt 44pt;
+    }
 
-    <div class="page-break"></div>
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      color: #0D1117;
+      font-size: 10.5pt;
+      line-height: 1.65;
+      margin: 0;
+      padding: 0;
+    }
 
-    <h1>Executive Summary</h1>
-    <p>{{ executive_summary }}</p>
+    /* ── Repeating Page Footer ── */
+    .page-footer {
+      position: fixed;
+      bottom: -52pt;
+      left: -44pt;
+      right: -44pt;
+      height: 44pt;
+      border-top: 1pt solid #C5CDFF;
+      background-color: #ffffff;
+      padding: 10pt 44pt 0 44pt;
+    }
+    .footer-table {
+      width: 100%;
+      border: none;
+      margin: 0;
+    }
+    .footer-table td {
+      border: none;
+      padding: 0;
+      font-size: 8.5pt;
+      color: #5A6A7A;
+      vertical-align: middle;
+    }
 
-    <div class="section-block">
-      <h2>Engagement Snapshot</h2>
-      <table class="summary-table">
+    /* ── Cover ── */
+    .cover {
+      background-color: #1E2A4A;
+      padding: 52pt 40pt 44pt 40pt;
+    }
+    .cover-eyebrow {
+      font-size: 7.5pt;
+      font-weight: 700;
+      letter-spacing: 1.5pt;
+      text-transform: uppercase;
+      color: #8BA3FF;
+      margin: 0 0 20pt 0;
+    }
+    .cover-title {
+      font-size: 30pt;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.15;
+      margin: 0 0 10pt 0;
+    }
+    .cover-divider {
+      border: none;
+      border-top: 1pt solid rgba(255,255,255,0.12);
+      margin: 22pt 0;
+    }
+    .cover-for-label {
+      font-size: 8.5pt;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.8pt;
+      font-weight: 700;
+      margin: 0 0 4pt 0;
+    }
+    .cover-url {
+      font-size: 11pt;
+      color: rgba(255,255,255,0.8);
+      font-weight: 600;
+      margin: 0 0 14pt 0;
+      word-break: break-all;
+    }
+    .cover-meta {
+      font-size: 9pt;
+      color: rgba(255,255,255,0.4);
+      margin: 2pt 0;
+    }
+    .cover-badge {
+      display: inline-block;
+      border: 1pt solid rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.5);
+      font-size: 7pt;
+      font-weight: 700;
+      letter-spacing: 1.2pt;
+      text-transform: uppercase;
+      padding: 3pt 9pt;
+      margin-top: 20pt;
+    }
+
+    /* ── Headings ── */
+    h1 {
+      font-size: 18pt;
+      font-weight: 700;
+      color: #1E2A4A;
+      margin: 0 0 10pt 0;
+      padding: 0;
+    }
+    h2 {
+      font-size: 14pt;
+      font-weight: 700;
+      color: #1E2A4A;
+      margin: 26pt 0 10pt 0;
+      padding-bottom: 6pt;
+      border-bottom: 2pt solid #5B6BF8;
+    }
+    h3 {
+      font-size: 11.5pt;
+      font-weight: 700;
+      color: #1E2A4A;
+      margin: 18pt 0 7pt 0;
+      padding: 0;
+    }
+    p {
+      margin: 0 0 8pt 0;
+    }
+
+    /* ── Executive Summary ── */
+    .exec-summary {
+      background-color: #F0F3FF;
+      border: 1pt solid #C5CDFF;
+      border-left: 4pt solid #5B6BF8;
+      padding: 14pt 18pt;
+      margin: 8pt 0 22pt 0;
+      font-size: 10.5pt;
+      line-height: 1.7;
+      color: #0D1117;
+    }
+
+    /* ── Stats Snapshot ── */
+    .stats-table {
+      margin: 8pt 0 20pt 0;
+    }
+    .stat-value {
+      font-size: 26pt;
+      font-weight: 700;
+      color: #3A4ACF;
+      line-height: 1.1;
+      margin: 0 0 2pt 0;
+    }
+    .stat-label {
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: #5A6A7A;
+      text-transform: uppercase;
+      letter-spacing: 0.4pt;
+    }
+    .stat-cell {
+      border: 1pt solid #E1E7EF;
+      background-color: #F7F9FC;
+      padding: 14pt 18pt;
+      width: 33%;
+    }
+
+    /* ── Tables (shared) ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6pt 0 14pt 0;
+      font-size: 10pt;
+    }
+    th {
+      background-color: #1E2A4A;
+      color: #ffffff;
+      font-size: 8.5pt;
+      font-weight: 700;
+      padding: 8pt 11pt;
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: 0.4pt;
+    }
+    td {
+      padding: 8pt 11pt;
+      border-bottom: 1pt solid #E1E7EF;
+      vertical-align: top;
+      color: #0D1117;
+    }
+    .row-even td {
+      background-color: #F7F9FC;
+    }
+
+    /* ── Methodology ── */
+    .methodology-block {
+      background-color: #F7F9FC;
+      border: 1pt solid #E1E7EF;
+      border-left: 3.5pt solid #C5CDFF;
+      padding: 12pt 16pt;
+      margin: 8pt 0 16pt 0;
+      font-size: 10pt;
+      color: #374151;
+      line-height: 1.65;
+    }
+
+    /* ── Analysis Blocks ── */
+    .analysis-block {
+      border: 1pt solid #E1E7EF;
+      border-left: 3.5pt solid #5B6BF8;
+      background-color: #F7F9FC;
+      padding: 11pt 14pt;
+      margin: 8pt 0;
+    }
+    .analysis-subject {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #0D1117;
+      margin: 0 0 4pt 0;
+    }
+    .analysis-methodology {
+      font-size: 9.5pt;
+      color: #5A6A7A;
+      margin: 0 0 8pt 0;
+    }
+    .observation-list {
+      margin: 4pt 0 8pt 18pt;
+      padding: 0;
+    }
+    .observation-list li {
+      margin: 3pt 0;
+      font-size: 10pt;
+      color: #0D1117;
+    }
+    .no-observations {
+      font-size: 9.5pt;
+      color: #5A6A7A;
+      font-style: italic;
+      margin: 0;
+    }
+
+    /* ── Evidence Table ── */
+    .evidence-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8pt;
+      table-layout: fixed;
+    }
+    .evidence-table th {
+      background-color: #E8EEFF;
+      color: #3A4ACF;
+      font-size: 8pt;
+      font-weight: 700;
+      padding: 5pt 8pt;
+      text-transform: uppercase;
+      letter-spacing: 0.3pt;
+    }
+    .evidence-table td {
+      padding: 5pt 8pt;
+      border-bottom: 1pt solid #EDF1F5;
+      font-size: 9pt;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+    }
+    .evidence-table td:first-child {
+      width: 28%;
+      color: #5A6A7A;
+      font-weight: 600;
+    }
+    .evidence-table td:last-child {
+      width: 72%;
+    }
+    .evidence-row-even td {
+      background-color: #F0F4FF;
+    }
+    .evidence-truncated {
+      font-size: 8.5pt;
+      color: #5A6A7A;
+      font-style: italic;
+      margin: 4pt 0 0 0;
+    }
+
+    /* ── Section Coverage ── */
+    .cov-count {
+      text-align: center;
+      font-weight: 700;
+      color: #3A4ACF;
+      font-size: 11pt;
+    }
+
+    /* ── Utils ── */
+    .muted      { color: #5A6A7A; }
+    .page-break { page-break-after: always; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Repeating Page Footer ── -->
+  <div class="page-footer">
+    <table class="footer-table">
+      <tr>
+        <td>{{ document_type }} &mdash; Optiminastic Advisory</td>
+        <td style="text-align: right;">Page <pdf:pagenumber> of <pdf:pagecount></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ── Cover Page ── -->
+  <div class="cover">
+    <div class="cover-eyebrow">Optiminastic Advisory</div>
+    <div class="cover-title">{{ document_type }}</div>
+    <hr class="cover-divider">
+    <div class="cover-for-label">Prepared for</div>
+    <div class="cover-url">{{ url }}</div>
+    <div class="cover-meta">Generated {{ generated_at_display }}</div>
+    <div class="cover-meta">Optiminastic Advisory</div>
+    <div class="cover-badge">Confidential</div>
+  </div>
+
+  <div class="page-break"></div>
+
+  <!-- ── Executive Summary ── -->
+  <h1>Executive Summary</h1>
+  <div class="exec-summary">
+    {{ executive_summary }}
+  </div>
+
+  <!-- ── Engagement Snapshot ── -->
+  <h2>Engagement Snapshot</h2>
+  <table class="stats-table">
+    <tbody>
+      <tr>
+        <td class="stat-cell">
+          <div class="stat-value">{{ stats.section_count }}</div>
+          <div class="stat-label">Sections</div>
+        </td>
+        <td class="stat-cell">
+          <div class="stat-value">{{ stats.analysis_count }}</div>
+          <div class="stat-label">Analyses</div>
+        </td>
+        <td class="stat-cell">
+          <div class="stat-value">{{ stats.observation_count }}</div>
+          <div class="stat-label">Observations</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Section Coverage</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Section</th>
+        <th style="text-align: center;">Analyses</th>
+        <th style="text-align: center;">Observations</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for summary in section_summaries %}
+      <tr{% if loop.index % 2 == 0 %} class="row-even"{% endif %}>
+        <td style="font-weight: 600;">{{ summary.title }}</td>
+        <td class="cov-count">{{ summary.analysis_count }}</td>
+        <td class="cov-count">{{ summary.observation_count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- ── Methodology ── -->
+  <div class="page-break"></div>
+  <h2>Methodology</h2>
+  <div class="methodology-block">
+    {{ methodology }}
+  </div>
+
+  <!-- ── Sections ── -->
+  {% for section in sections %}
+  <div class="page-break"></div>
+  <h2>{{ section.title }}</h2>
+  <p class="muted">{{ section.description }}</p>
+
+  {% for analysis in section.analyses %}
+  <div class="analysis-block">
+    <div class="analysis-subject">{{ analysis.subject }}</div>
+    {% if analysis.methodology %}
+    <div class="analysis-methodology">{{ analysis.methodology }}</div>
+    {% endif %}
+
+    {% if analysis.observations %}
+    <ul class="observation-list">
+      {% for obs in analysis.observations %}
+      <li>{{ obs }}</li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="no-observations">No observations recorded.</p>
+    {% endif %}
+
+    {% if analysis.evidence_items %}
+    <table class="evidence-table">
+      <thead>
         <tr>
-          <th>Sections</th>
-          <th>Analyses</th>
-          <th>Observations</th>
+          <th>Evidence</th>
+          <th>Detail</th>
         </tr>
-        <tr>
-          <td>{{ stats.section_count }}</td>
-          <td>{{ stats.analysis_count }}</td>
-          <td>{{ stats.observation_count }}</td>
-        </tr>
-      </table>
-
-      <h3>Section Coverage</h3>
-      <table class="summary-table">
-        <tr>
-          <th>Section</th>
-          <th>Analyses</th>
-          <th>Observations</th>
-        </tr>
-        {% for summary in section_summaries %}
-        <tr>
-          <td>{{ summary.title }}</td>
-          <td>{{ summary.analysis_count }}</td>
-          <td>{{ summary.observation_count }}</td>
+      </thead>
+      <tbody>
+        {% for item in analysis.evidence_items %}
+        <tr{% if loop.index % 2 == 0 %} class="evidence-row-even"{% endif %}>
+          <td>{{ item.key }}</td>
+          <td>{{ item.value }}</td>
         </tr>
         {% endfor %}
-      </table>
-    </div>
+      </tbody>
+    </table>
+    {% if analysis.evidence_truncated %}
+    <p class="evidence-truncated">* Evidence truncated for brevity.</p>
+    {% endif %}
+    {% endif %}
+  </div>
+  {% endfor %}
 
-    <div class="section-block page-break">
-      <h2>Methodology</h2>
-      <p>{{ methodology }}</p>
-    </div>
+  {% endfor %}
 
-    {% for section in sections %}
-    <div class="section-block page-break">
-      <h2>{{ section.title }}</h2>
-      <p class="muted">{{ section.description }}</p>
-
-      {% for analysis in section.analyses %}
-      <div class="analysis">
-        <div class="analysis-title">{{ analysis.subject }}</div>
-        {% if analysis.methodology %}
-        <p class="muted">{{ analysis.methodology }}</p>
-        {% endif %}
-        {% if analysis.observations %}
-        <ul class="observation-list">
-          {% for observation in analysis.observations %}
-          <li>{{ observation }}</li>
-          {% endfor %}
-        </ul>
-        {% else %}
-        <p class="muted">No observations recorded.</p>
-        {% endif %}
-
-        {% if analysis.evidence_items %}
-        <table class="evidence-table">
-          <tr>
-            <th>Evidence</th>
-            <th>Detail</th>
-          </tr>
-          {% for item in analysis.evidence_items %}
-          <tr>
-            <td>{{ item.key }}</td>
-            <td>{{ item.value }}</td>
-          </tr>
-          {% endfor %}
-        </table>
-        {% if analysis.evidence_truncated %}
-        <p class="muted">Evidence truncated for brevity.</p>
-        {% endif %}
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
-    {% endfor %}
-
-    <div class="footer">
-      {{ document_type }} generated {{ generated_at_display }}.
-    </div>
-  </body>
+</body>
 </html>
